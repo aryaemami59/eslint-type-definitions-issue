@@ -1,5 +1,3 @@
-# Issue with ESLint's Type Definitions
-
 ## Overview
 
 This repository addresses issues with the current type definitions for ESLint. Below are the identified problems and their respective solutions.
@@ -9,27 +7,6 @@ This repository addresses issues with the current type definitions for ESLint. B
 ### 1. Subpath Exports with TypeScript's [**`Node10`**](https://www.typescriptlang.org/docs/handbook/modules/reference.html#node10-formerly-known-as-node) Module Resolution
 
 **Problem**: The subpath exports `eslint/use-at-your-own-risk` and `eslint/rules` do not work under TypeScript's [**`Node10`**](https://www.typescriptlang.org/docs/handbook/modules/reference.html#node10-formerly-known-as-node) module resolution strategy.
-
-<details>
-
-  <summary>Note</summary>
-  You can test for this by running `yarn test`. This also becomes apparent if you run:
-
-```bash
-npx @arethetypeswrong/cli@latest --from-npm eslint
-```
-
-Here is a before and after:
-
-#### **Before:**
-
-![before](./assets/before.png)
-
-#### **After:**
-
-![after](./assets/after.png)
-
-</details>
 
 **Solution**: Use [**`typesVersions`**](https://github.com/andrewbranch/example-subpath-exports-ts-compat/tree/main/examples/node_modules/types-versions-wildcards) to satisfy TypeScript's [**`Node10`**](https://www.typescriptlang.org/docs/handbook/modules/reference.html#node10-formerly-known-as-node) module resolution:
 
@@ -91,16 +68,60 @@ module.exports = {
   </summary>
 
 ```diff
-+const builtinRules = require('./rules')
-+
+ /**
+  * @fileoverview APIs that are not officially supported by ESLint.
+  *      These APIs may change or be removed at any time. Use at your
+  *      own risk.
+  * @author Nicholas C. Zakas
+  */
+
+ "use strict";
+
+ //-----------------------------------------------------------------------------
+ // Requirements
+ //-----------------------------------------------------------------------------
+
+ const { FileEnumerator } = require("./cli-engine/file-enumerator");
+ const { ESLint: FlatESLint, shouldUseFlatConfig } = require("./eslint/eslint");
+ const { LegacyESLint } = require("./eslint/legacy-eslint");
++const builtinRules = require("./rules");
+
+ //-----------------------------------------------------------------------------
+ // Exports
+ //-----------------------------------------------------------------------------
+
  module.exports = {
--  builtinRules: require('./rules'),
-+  builtinRules,
-   FlatESLint,
-   shouldUseFlatConfig,
-   FileEnumerator,
- }
+-    builtinRules: require("./rules"),
++    builtinRules,
+     FlatESLint,
+     shouldUseFlatConfig,
+     FileEnumerator,
+     LegacyESLint
+ };
+
 ```
+
+</details>
+
+<details>
+
+  <summary><b>Note</b></summary>
+
+You can test for these by following the [Reproduction Steps](#reproduction-steps) running `yarn test`. This also becomes apparent if you run [**Are The Types Wrong**](https://github.com/arethetypeswrong/arethetypeswrong.github.io):
+
+```bash
+npx @arethetypeswrong/cli@latest --from-npm eslint
+```
+
+Here is a before and after:
+
+#### **Before:**
+
+![before](./assets/before.png)
+
+#### **After:**
+
+![after](./assets/after.png)
 
 </details>
 
